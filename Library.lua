@@ -2192,7 +2192,7 @@ do
 end
 
 --// Icons \\--
-local CheckIcon, ArrowIcon, ResizeIcon, KeyIcon, PopOutIcon, CloseIcon, SettingsIcon
+local CheckIcon, ArrowIcon, ResizeIcon, KeyIcon, PopOutIcon, CloseIcon, SettingsIcon, MinimizeIcon
 function Library:SetIconModule(module: IconModule)
     FetchIcons = true
     Icons = module
@@ -2204,6 +2204,7 @@ function Library:SetIconModule(module: IconModule)
     PopOutIcon = Library:GetIcon("square-arrow-down-left")
     CloseIcon = Library:GetIcon("x")
     SettingsIcon = Library:GetIcon("settings")
+    MinimizeIcon = Library:GetIcon("minimize-2")
 end
 
 local OnlineFetchIcons, OnlineIcons = pcall(function()
@@ -12116,6 +12117,33 @@ function Library:CreateWindow(WindowInfo)
             PaddingRight = UDim.new(0, 13),
             Parent = BadgeLabel,
         })
+
+        --// Minimize button: hides the UI, same as the toggle keybind
+        local MinimizeButton = New("ImageButton", {
+            AutoButtonColor = false,
+            BackgroundTransparency = 1,
+            ImageColor3 = "FontColor",
+            ImageTransparency = 0.5,
+            LayoutOrder = 4,
+            Size = UDim2.fromOffset(16, 16),
+            Parent = RightWrapper,
+        })
+        if MinimizeIcon then
+            Library:ApplyLucideIcon(MinimizeButton, MinimizeIcon)
+        end
+        Library:GiveSignal(MinimizeButton.MouseEnter:Connect(function()
+            TweenService:Create(MinimizeButton, Library.HoverTweenInfo, {
+                ImageTransparency = 0,
+            }):Play()
+        end))
+        Library:GiveSignal(MinimizeButton.MouseLeave:Connect(function()
+            TweenService:Create(MinimizeButton, Library.HoverTweenInfo, {
+                ImageTransparency = 0.5,
+            }):Play()
+        end))
+        Library:GiveSignal(MinimizeButton.MouseButton1Click:Connect(function()
+            Library:Toggle(false)
+        end))
 
         --// The title row gets whatever the right cluster leaves, so long titles truncate instead of overlapping
         local function FitTitleHolder()
