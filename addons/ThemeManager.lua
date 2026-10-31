@@ -1023,6 +1023,45 @@ function ThemeManager:CreateThemeManager(Themesbox: any)
         )
     end):AddButton("Refresh", RefreshList)
 
+    --// Window status: live size & position with a copy button
+    local MainFrame = Library.Window and Library.Window.MainFrame
+    local StatusLabel = Themesbox:AddLabel("Size: - | Pos: -", true)
+
+    local function GetStatusText(): string
+        if not (MainFrame and MainFrame.Parent) then
+            return "Size: - | Pos: -"
+        end
+
+        local Size, Pos = MainFrame.Size, MainFrame.Position
+        return string.format(
+            "Size: %d, %d | Pos: %d, %d",
+            Size.X.Offset,
+            Size.Y.Offset,
+            Pos.X.Offset + Pos.X.Scale * MainFrame.Parent.AbsoluteSize.X,
+            Pos.Y.Offset + Pos.Y.Scale * MainFrame.Parent.AbsoluteSize.Y
+        )
+    end
+
+    local function UpdateStatus()
+        StatusLabel:SetText(GetStatusText())
+    end
+
+    if MainFrame then
+        Library:GiveSignal(MainFrame:GetPropertyChangedSignal("Size"):Connect(UpdateStatus))
+        Library:GiveSignal(MainFrame:GetPropertyChangedSignal("Position"):Connect(UpdateStatus))
+    end
+    UpdateStatus()
+
+    Themesbox:AddButton("Copy size & position", function()
+        if not setclipboard then
+            Library:Notify("Your executor does not support setclipboard")
+            return
+        end
+
+        setclipboard(GetStatusText())
+        Library:Notify("Copied size & position to your clipboard")
+    end)
+
     --// Handlers
     ThemeList:OnChanged(function(Value)
         if IsStringEmpty(Value) then
